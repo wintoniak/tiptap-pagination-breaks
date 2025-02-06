@@ -1,4 +1,4 @@
-import { Attribute, Extension } from '@tiptap/core';
+import { Extension } from '@tiptap/core';
 import { Plugin, PluginKey } from 'prosemirror-state';
 import { Decoration, DecorationSet } from 'prosemirror-view';
 import { Node } from 'prosemirror-model';
@@ -12,9 +12,6 @@ export interface PaginationOptions {
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     pagination: {
-      /**
-       * Set pagination options
-       */
       setPaginationOptions: (options: Partial<PaginationOptions>) => ReturnType;
     };
   }
@@ -25,9 +22,9 @@ export const Pagination = Extension.create<PaginationOptions>({
 
   addOptions() {
     return {
-      pageHeight: 1056,
-      pageWidth: 816,
-      pageMargin: 96,
+      pageHeight: 1056, // default height of the page
+      pageWidth: 816, // default width of the page
+      pageMargin: 96, // Default margin
     };
   },
 
@@ -54,27 +51,32 @@ export const Pagination = Extension.create<PaginationOptions>({
           init: () => ({ ...this.options }),
           apply: (tr, value) => {
             const newOptions = tr.getMeta('paginationOptions');
-            if (newOptions) {
-              return { ...value, ...newOptions };
-            }
-            return value;
+            return newOptions ? { ...value, ...newOptions } : value;
           },
         },
         props: {
           decorations: (state) => {
             const { doc } = state;
             const decorations: Decoration[] = [];
-            let currentHeight = 0;
+            let currentPageHeight = 0;
 
             const options = pluginKey.getState(state);
+            const { pageHeight, pageMargin } = options;
 
             doc.descendants((node: Node, pos: number) => {
-              const { pageHeight, pageMargin } = options;
-              const nodeHeight = node.isBlock
-                ? (this.editor.view.nodeDOM(pos) as HTMLElement).offsetHeight
-                : 0;
+              // Calculate node height (more robust method)
+              const nodeDOM = this.editor.view.nodeDOM(pos);
+              const nodeHeight =
+                node.isBlock && nodeDOM instanceof HTMLElement
+                  ? nodeDOM.offsetHeight
+                  : 0;
 
-              if (currentHeight + nodeHeight > pageHeight - 2 * pageMargin) {
+              // Check if current page is full
+              if (
+                currentPageHeight + nodeHeight >
+                pageHeight - 2 * pageMargin
+              ) {
+                // Insert page break decoration
                 decorations.push(
                   Decoration.widget(pos, () => {
                     const pageBreak = document.createElement('div');
@@ -84,13 +86,17 @@ export const Pagination = Extension.create<PaginationOptions>({
                     pageBreak.style.borderTop = '1px dashed #ccc';
                     pageBreak.style.marginTop = '10px';
                     pageBreak.style.marginBottom = '10px';
+                    pageBreak.setAttribute('data-page-break', 'true');
                     return pageBreak;
                   })
                 );
-                currentHeight = 0;
+
+                // Reset page height
+                currentPageHeight = 0;
               }
 
-              currentHeight += nodeHeight;
+              // Accumulate page height
+              currentPageHeight += nodeHeight;
             });
 
             return DecorationSet.create(doc, decorations);
@@ -108,13 +114,9 @@ export const Pagination = Extension.create<PaginationOptions>({
           class: {
             default: null,
             parseHTML: (element: HTMLElement) => element.getAttribute('class'),
-            renderHTML: (attributes: Record<string, any>) => {
-              if (!attributes.class) {
-                return {};
-              }
-              return { class: attributes.class };
-            },
-          } as Attribute,
+            renderHTML: (attributes) =>
+              attributes.class ? { class: attributes.class } : {},
+          },
         },
       },
     ];
