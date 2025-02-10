@@ -30,6 +30,11 @@ export default {
       useTsconfigDeclarationDir: true,
       tsconfigOverride: {
         exclude: ['**/*.test.ts', '**/*.test.tsx'],
+        compilerOptions: {
+          declaration: true,
+          declarationDir: './dist',
+          emitDeclarationOnly: false,
+        },
       },
     }),
   ],
