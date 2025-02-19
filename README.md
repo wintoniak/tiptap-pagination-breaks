@@ -7,6 +7,7 @@
 - **Automatic Pagination**: Handles content overflow by adding page breaks based on defined page dimensions.
 - **Customizable Page Settings**: Configure page height, width, and margin to control how content is paginated.
 - **Visual Page Breaks**: Inserts dashed lines to represent page boundaries in the editor.
+- **Page Numbering**: Allows optional page numbering.
 
 ## Installation
 
@@ -34,6 +35,8 @@ const editor = new Editor({
       pageHeight: 1056, // default height of the page
       pageWidth: 816,   // default width of the page
       pageMargin: 96,   // default margin of the page
+       label: 'Page'     // default Page,
+      showPageNumber: true  // default true,
     }),
     // other extensions
   ],
@@ -69,6 +72,8 @@ Ensure you have a global style to define how the page break will look visually:
 pageHeight: Height of each page in the editor (default: 1056).
 pageWidth: Width of each page in the editor (default: 816).
 pageMargin: Margin around the content on each page (default: 96).
+label: Custom label for page numbering (e.g., 'Page').
+showPageNumber: Whether to show page numbers (true or false)
 
 ### Example
 
