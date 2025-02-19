@@ -1,6 +1,6 @@
 {
   "name": "tiptap-pagination-breaks",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A Tiptap extension for pagination",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
